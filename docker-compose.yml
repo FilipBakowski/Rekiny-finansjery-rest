@@ -1,0 +1,19 @@
+version: "3.7"
+
+services:
+  mariadb:
+    image: $MARIADB_TAG
+    container_name: "${PROJECT_NAME}_mariadb"
+    privileged: true
+    stop_grace_period: 30s
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASSWORD
+    ports:
+      - "3306:3306"
+#    volumes:
+#      - ./db/mysql:/var/lib/mysql :rw
+#      - ./db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
