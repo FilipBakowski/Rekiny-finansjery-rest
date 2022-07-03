@@ -51,16 +51,15 @@ public class CurrencyStatisticsController {
 
 
     @PostMapping("/requestedCurrencies")
-    @Transactional
-    public ResponseEntity<Void> incrementCurrencyCounters(@RequestBody List<String> searchedCurrenciesList){
-        currencyStatisticsService.incrementCurrencyCounters(searchedCurrenciesList);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    public ResponseEntity<List<CurrencyStatisticsDTO>> incrementCurrencyCounters(@RequestBody List<String> searchedCurrenciesList){
+        List<CurrencyStatisticsDTO> incrementedCurrencies = currencyStatisticsService.incrementCurrencyCounters(searchedCurrenciesList);
+        return ResponseEntity.accepted().body(incrementedCurrencies);
     }
 
     @ControllerAdvice
     public class ControllerExceptionHandler{
-        @ExceptionHandler(DateTimeParseException.class)
-        public ResponseEntity<ErrorCause> handle(DateTimeParseException e) {
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorCause> handle(Exception e) {
             return ResponseEntity.internalServerError().body(new ErrorCause(e.getMessage()));
         }
     }

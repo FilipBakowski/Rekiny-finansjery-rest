@@ -8,8 +8,12 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class CurrencyStatisticsService {
@@ -63,23 +67,25 @@ public class CurrencyStatisticsService {
     }
 
     @Transactional
-    public void incrementCurrencyCounters(List<String> codes){
-        codes.forEach(code -> incrementCurrencyCounter(code));
-    }
-
-    private void incrementCurrencyCounter(String code){
-        Optional<CurrencyStatistics> currencyStatisticsOptional =
-                currencyStatisticsRepository.findCurrencyStatisticsByCodeAndDate(code, LocalDate.now());
-        if(currencyStatisticsOptional.isEmpty()){
-            CurrencyStatistics newCurrencyStatistic = new CurrencyStatistics(code, LocalDate.now(), 1L);
-            currencyStatisticsRepository.save(newCurrencyStatistic);
-        }
-        else{
-            CurrencyStatistics currencyStatistics = currencyStatisticsOptional.get();
-            currencyStatistics.setCounter(currencyStatistics.getCounter()+1);
-            currencyStatisticsRepository.save(currencyStatistics);
-
-        }
+    public List<CurrencyStatisticsDTO> incrementCurrencyCounters(List<String> codes){
+        List<CurrencyStatistics> currencyStatistics = currencyStatisticsRepository.findCurrencyStatisticsByCodeInAndDate(codes, LocalDate.now());
+        Map<String, CurrencyStatistics> currencies = currencyStatistics.stream().collect(Collectors.toMap(CurrencyStatistics::getCode, Function.identity()));
+        List<CurrencyStatistics> newCurrencyStatistics = new ArrayList<>();
+        List<String> existingCodes = currencyStatistics.stream().map(stat -> stat.getCode()).toList();
+        codes.stream().distinct().forEach(code -> {
+            if(existingCodes.contains(code)){
+                CurrencyStatistics incrementedCurrency = currencies.get(code);
+                incrementedCurrency.setCounter(incrementedCurrency.getCounter()+1);
+                newCurrencyStatistics.add(incrementedCurrency);
+            }
+            else{
+                CurrencyStatistics newCurrencyStatistic = new CurrencyStatistics(code, LocalDate.now(), 1L);
+                newCurrencyStatistics.add(newCurrencyStatistic);
+                currencyStatistics.add(newCurrencyStatistic);
+            }
+        });
+        currencyStatisticsRepository.saveAll(newCurrencyStatistics);
+        return mapCurrencyStatisticsListToDTO(currencyStatistics);
     }
 
     private List<CurrencyStatisticsDTO> mapCurrencyStatisticsListToDTO(List<CurrencyStatistics> currencyStatistics){

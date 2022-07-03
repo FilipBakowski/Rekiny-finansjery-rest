@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CurrencyStatisticsRepository extends JpaRepository<CurrencyStatistics, UUID> {
-    Optional<CurrencyStatistics> findCurrencyStatisticsByCodeAndDate(String code, LocalDate date);
+    List<CurrencyStatistics> findCurrencyStatisticsByCodeInAndDate(List<String> codes, LocalDate date);
     List<CurrencyStatistics> findCurrencyStatisticsByDateBetween(LocalDate start, LocalDate end);
     List<CurrencyStatistics> findCurrencyStatisticsByCodeAndDateBetween(String code, LocalDate start, LocalDate end);
 }
