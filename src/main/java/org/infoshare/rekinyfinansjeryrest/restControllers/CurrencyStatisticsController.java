@@ -50,7 +50,7 @@ public class CurrencyStatisticsController {
     }
 
 
-    @PostMapping("/requestedCurrencies")
+    @PostMapping("/requested_currencies")
     public ResponseEntity<List<CurrencyStatisticsDTO>> incrementCurrencyCounters(@RequestBody List<String> searchedCurrenciesList){
         List<CurrencyStatisticsDTO> incrementedCurrencies = currencyStatisticsService.incrementCurrencyCounters(searchedCurrenciesList);
         return ResponseEntity.accepted().body(incrementedCurrencies);
