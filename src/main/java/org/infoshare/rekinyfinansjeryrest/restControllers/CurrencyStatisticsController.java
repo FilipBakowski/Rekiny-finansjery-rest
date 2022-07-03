@@ -1,13 +1,16 @@
 package org.infoshare.rekinyfinansjeryrest.restControllers;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.infoshare.rekinyfinansjeryrest.dto.CurrencyStatisticsDTO;
-import org.infoshare.rekinyfinansjeryrest.dto.SearchedCurrenciesListDTO;
 import org.infoshare.rekinyfinansjeryrest.service.CurrencyStatisticsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -20,45 +23,54 @@ public class CurrencyStatisticsController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<CurrencyStatisticsDTO>> getAllCurrencyStatistics(){
-        return new ResponseEntity<>(currencyStatisticsService.getAllCurrencyStatistics(), HttpStatus.OK);
+    public List<CurrencyStatisticsDTO> getAllCurrencyStatistics(){
+        return currencyStatisticsService.getAllCurrencyStatistics();
     }
 
     @GetMapping()
-    public ResponseEntity<List<CurrencyStatisticsDTO>> getRecentCurrencyStatistics(){
-        return new ResponseEntity<>(currencyStatisticsService.getRecentCurrencyStatistics(), HttpStatus.OK);
+    public List<CurrencyStatisticsDTO> getRecentCurrencyStatistics(){
+        return currencyStatisticsService.getRecentCurrencyStatistics();
     }
 
     @GetMapping("/currency/{code}")
-    public ResponseEntity<List<CurrencyStatisticsDTO>> getRecentCurrencyStatisticsForOneCurrency(@PathVariable("code") String code){
-        return new ResponseEntity<>(currencyStatisticsService.getRecentCurrencyStatisticsForOneCurrency(code), HttpStatus.OK);
+    public List<CurrencyStatisticsDTO> getRecentCurrencyStatisticsForOneCurrency(@PathVariable("code") String code){
+        return currencyStatisticsService.getRecentCurrencyStatisticsForOneCurrency(code);
     }
 
     @GetMapping("/history/{month}/{year}")
-    public ResponseEntity<List<CurrencyStatisticsDTO>> getCurrencyStatisticsFromSelectedMonth(
+    public List<CurrencyStatisticsDTO> getCurrencyStatisticsFromSelectedMonth(
             @PathVariable("month") int month, @PathVariable("year") int year){
-        return new ResponseEntity<>(currencyStatisticsService.getCurrencyStatisticsFromSelectedMonth(month, year),
-                HttpStatus.OK);
+        return currencyStatisticsService.getCurrencyStatisticsFromSelectedMonth(month, year);
     }
 
     @GetMapping("/history/{month}/{year}/{code}")
-    public ResponseEntity<List<CurrencyStatisticsDTO>> getCurrencyStatisticsFromSelectedMonthForCurrency(
+    public List<CurrencyStatisticsDTO> getCurrencyStatisticsFromSelectedMonthForCurrency(
             @PathVariable("month") int month, @PathVariable("year") int year, @PathVariable("code") String code){
-        return new ResponseEntity<>(currencyStatisticsService
-                .getRecentCurrencyStatisticsForOneCurrencyFromSelectedMonth(code, month, year),
-                HttpStatus.OK);
+        return currencyStatisticsService.getRecentCurrencyStatisticsForOneCurrencyFromSelectedMonth(code, month, year);
     }
 
 
-    @PostMapping("/increment")
+    @PostMapping("/requestedCurrencies")
     @Transactional
-    public ResponseEntity<Void> incrementCurrencyCounters(@RequestBody SearchedCurrenciesListDTO searchedCurrenciesList){
-        if(currencyStatisticsService.incrementCurrencyCounters(searchedCurrenciesList.getSearchedCurrenciesCodes())){
-            return new ResponseEntity<>(HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Void> incrementCurrencyCounters(@RequestBody List<String> searchedCurrenciesList){
+        currencyStatisticsService.incrementCurrencyCounters(searchedCurrenciesList);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
+    @ControllerAdvice
+    public class ControllerExceptionHandler{
+        @ExceptionHandler(DateTimeParseException.class)
+        public ResponseEntity<ErrorCause> handle(DateTimeParseException e) {
+            return ResponseEntity.internalServerError().body(new ErrorCause(e.getMessage()));
+        }
+    }
 
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public class ErrorCause {
 
+        private String cause;
+
+    }
 }

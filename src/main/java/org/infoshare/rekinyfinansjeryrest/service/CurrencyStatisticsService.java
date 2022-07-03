@@ -1,21 +1,15 @@
 package org.infoshare.rekinyfinansjeryrest.service;
 
 import org.infoshare.rekinyfinansjeryrest.dto.CurrencyStatisticsDTO;
-import org.infoshare.rekinyfinansjeryrest.dto.SearchedCurrenciesListDTO;
 import org.infoshare.rekinyfinansjeryrest.entity.CurrencyStatistics;
 import org.infoshare.rekinyfinansjeryrest.repository.CurrencyStatisticsRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CurrencyStatisticsService {
@@ -69,14 +63,8 @@ public class CurrencyStatisticsService {
     }
 
     @Transactional
-    public boolean incrementCurrencyCounters(List<String> codes){
-        try {
-            codes.forEach(code -> incrementCurrencyCounter(code));
-        }
-        catch (Exception e){
-            return false;
-        }
-        return true;
+    public void incrementCurrencyCounters(List<String> codes){
+        codes.forEach(code -> incrementCurrencyCounter(code));
     }
 
     private void incrementCurrencyCounter(String code){
